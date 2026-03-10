@@ -216,7 +216,7 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
 <!-- CORRIDAS -->
 
 <section id="pg-corridas" class="page">
-  <div class="sh"><div class="sh-title">Corridas</div></div>
+  <div class="sh"><div class="sh-title">Ganhos</div></div>
   <div class="stat-row">
     <div class="sc"><div class="sc-ico" style="background:var(--gbg)">📅</div><div class="sc-val" style="color:var(--g)" id="cr-hoje">R$ 0</div><div class="sc-name">Hoje</div></div>
     <div class="sc"><div class="sc-ico" style="background:var(--bbg)">🗓</div><div class="sc-val" style="color:var(--b)" id="cr-mes">R$ 0</div><div class="sc-name">Este mês</div></div>
@@ -226,7 +226,7 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
     <div class="form">
       <div class="fi-row">
         <div class="fi"><label>Data</label><input type="date" id="cr-data"></div>
-        <div class="fi"><label>App</label><select id="cr-app"><option>Uber</option><option>99</option><option>InDrive</option><option>Germana</option><option>Outros</option></select></div>
+        <div class="fi"><label>App</label><select id="cr-app"><option>Uber</option><option>99</option><option>Germana</option><option>🎰 Apostas</option><option>Outros</option></select></div>
       </div>
       <div class="fi"><label>Valor (R$)</label><input type="number" id="cr-val" placeholder="0,00" step="0.01" min="0" inputmode="decimal"></div>
       <div class="fi"><label>Obs (opcional)</label><input type="text" id="cr-obs" placeholder="Ex: dia fraco, chuva..."></div>
@@ -254,16 +254,14 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
         <select id="gs-cat" onchange="onCatChange()">
           <option value="">Selecione...</option>
           <option value="contas">📋 Contas</option>
-          <option value="⛽ Gasolina / Álcool">⛽ Gasolina / Álcool</option>
           <option value="⛽ Gasolina Onix">⛽ Gasolina Onix</option>
           <option value="⛽ Gasolina Corolla">⛽ Gasolina Corolla</option>
           <option value="💼 Gastos Trabalhando">💼 Gastos Trabalhando</option>
+          <option value="🎰 Apostas">🎰 Apostas</option>
           <option value="🔧 Manutenção">🔧 Manutenção</option>
           <option value="🍽 Alimentação">🍽 Alimentação</option>
           <option value="🏠 Aluguel">🏠 Aluguel</option>
-          <option value="💡 Luz / Água / Gás">💡 Luz / Água / Gás</option>
           <option value="📱 Celular / Internet">📱 Celular / Internet</option>
-          <option value="🏥 Saúde">🏥 Saúde</option>
           <option value="🛒 Outros">🛒 Outros</option>
         </select>
       </div>
@@ -279,11 +277,11 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
     <div class="chips" id="gs-chips">
       <div class="chip on" onclick="filterG('todos',this)">Todos</div>
       <div class="chip" onclick="filterG('contas',this)">📋 Contas</div>
-      <div class="chip" onclick="filterG('⛽ Gasolina / Álcool',this)">⛽ Gasolina</div>
       <div class="chip" onclick="filterG('⛽ Gasolina Onix',this)">⛽ Onix</div>
       <div class="chip" onclick="filterG('⛽ Gasolina Corolla',this)">⛽ Corolla</div>
       <div class="chip" onclick="filterG('💼 Gastos Trabalhando',this)">💼 Trabalhando</div>
       <div class="chip" onclick="filterG('🍽 Alimentação',this)">🍽 Alimentação</div>
+      <div class="chip" onclick="filterG('🎰 Apostas',this)">🎰 Apostas</div>
       <div class="chip" onclick="filterG('🔧 Manutenção',this)">🔧 Manutenção</div>
     </div>
     <div id="gs-list"></div>
@@ -409,7 +407,7 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
       <input type="hidden" id="ecr-id">
       <div class="fi-row">
         <div class="fi"><label>Data</label><input type="date" id="ecr-data"></div>
-        <div class="fi"><label>App</label><select id="ecr-app"><option>Uber</option><option>99</option><option>InDrive</option><option>Germana</option><option>Outros</option></select></div>
+        <div class="fi"><label>App</label><select id="ecr-app"><option>Uber</option><option>99</option><option>Germana</option><option>🎰 Apostas</option><option>Outros</option></select></div>
       </div>
       <div class="fi"><label>Valor (R$)</label><input type="number" id="ecr-val" step="0.01" min="0" inputmode="decimal"></div>
       <div class="fi"><label>Obs (opcional)</label><input type="text" id="ecr-obs"></div>
@@ -432,16 +430,14 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
       <div class="fi"><label>Descrição</label><input type="text" id="egs-desc"></div>
       <div class="fi"><label>Categoria</label>
         <select id="egs-cat">
-          <option value="⛽ Gasolina / Álcool">⛽ Gasolina / Álcool</option>
           <option value="⛽ Gasolina Onix">⛽ Gasolina Onix</option>
           <option value="⛽ Gasolina Corolla">⛽ Gasolina Corolla</option>
           <option value="💼 Gastos Trabalhando">💼 Gastos Trabalhando</option>
+          <option value="🎰 Apostas">🎰 Apostas</option>
           <option value="🔧 Manutenção">🔧 Manutenção</option>
           <option value="🍽 Alimentação">🍽 Alimentação</option>
           <option value="🏠 Aluguel">🏠 Aluguel</option>
-          <option value="💡 Luz / Água / Gás">💡 Luz / Água / Gás</option>
           <option value="📱 Celular / Internet">📱 Celular / Internet</option>
-          <option value="🏥 Saúde">🏥 Saúde</option>
           <option value="📋 Contas">📋 Contas</option>
           <option value="🛒 Outros">🛒 Outros</option>
         </select>
@@ -467,7 +463,7 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
 
 <nav class="botnav">
   <button class="bntab on" onclick="go('dash')" data-p="dash"><span class="ico">🏠</span>Início</button>
-  <button class="bntab" onclick="go('corridas')" data-p="corridas"><span class="ico">💰</span>Corridas</button>
+  <button class="bntab" onclick="go('corridas')" data-p="corridas"><span class="ico">💰</span>Ganhos</button>
   <button class="bntab" onclick="go('gastos')" data-p="gastos"><span class="ico">💸</span>Gastos</button>
   <button class="bntab" onclick="go('contas')" data-p="contas"><span class="ico">📋</span>Contas</button>
   <button class="bntab" onclick="go('plano')" data-p="plano"><span class="ico">🎯</span>Meta</button>
@@ -977,7 +973,7 @@ function drawPizza(canvasId, legendId, data){
 
 function renderPizzas(){
   const mes=today().slice(0,7);
-  const appColors={'Uber':'#1dbf73','99':'#f5a623','InDrive':'#3557f0','Germana':'#7c5cbf','Outros':'#8e96b0'};
+  const appColors={'Uber':'#1dbf73','99':'#f5a623','Germana':'#7c5cbf','🎰 Apostas':'#ef3c54','Outros':'#8e96b0'};
   // corridas pizza por app
   const appsMap={};
   S.corridas.filter(c=>c.data.startsWith(mes)).forEach(c=>{appsMap[c.app]=(appsMap[c.app]||0)+c.val;});
