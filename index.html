@@ -207,6 +207,16 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
   <div class="card"><div class="card-title">Contas Urgentes</div><div id="d-urgentes"></div></div>
   <div class="card"><div class="card-title">Gastos por Categoria</div><div id="d-cats"></div></div>
   <div class="card">
+    <div class="card-title">Backup dos Dados</div>
+    <div style="display:flex;gap:10px">
+      <button class="btn bd" onclick="exportData()" style="flex:1">⬆️ Exportar</button>
+      <button class="btn bd" onclick="document.getElementById('import-file').click()" style="flex:1;background:var(--g)">⬇️ Importar</button>
+    </div>
+    <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+    <div style="font-size:.72rem;color:var(--muted);margin-top:10px;text-align:center;line-height:1.5">Exporte antes de reinstalar o app.<br>Importe para restaurar seus dados.</div>
+  </div>
+
+  <div class="card">
     <div class="card-title">Ganhos — Últimos 7 dias</div>
     <div class="spark" id="d-spark"></div>
     <div class="spark-labels" id="d-spark-labels"></div>
@@ -988,6 +998,34 @@ function renderPizzas(){
   const gsData=Object.entries(catMap).sort((a,b)=>b[1]-a[1]).map(([cat,val])=>({label:cat,val,color:catColors[cat]||'#8e96b0'}));
   if(gsData.length) drawPizza('gs-pizza','gs-pizza-legend',gsData);
   else{const el=document.getElementById('gs-pizza-legend');if(el)el.innerHTML='<div class="empty"><div class="empty-ico">🍕</div><p>Sem dados este mês</p></div>';}
+}
+
+
+// BACKUP
+function exportData(){
+  const json=JSON.stringify(S,null,2);
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  const date=new Date().toISOString().slice(0,10);
+  a.download='motorcash-backup-'+date+'.json';
+  a.click();URL.revokeObjectURL(url);
+  toast('✓ Backup exportado!');
+}
+function importData(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const data=JSON.parse(ev.target.result);
+      if(!data.corridas||!data.gastos||!data.contas){toast('Arquivo inválido!',true);return;}
+      S=data;save();render();
+      toast('✓ Dados restaurados!');
+    }catch(err){toast('Erro ao importar!',true);}
+  };
+  reader.readAsText(file);
+  e.target.value='';
 }
 
 function render(){renderDash();renderCorridas();renderGastos();renderContas();renderPlano();renderPizzas();}
