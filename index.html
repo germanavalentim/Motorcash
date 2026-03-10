@@ -234,6 +234,7 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
     </div>
   </div>
   <div class="card"><div class="card-title">Histórico</div><div id="cr-list"></div></div>
+  <div class="card"><div class="card-title">Ganhos por App</div><canvas id="cr-pizza" width="220" height="220" style="display:block;margin:0 auto"></canvas><div id="cr-pizza-legend" style="margin-top:14px"></div></div>
 </section>
 
 <!-- GASTOS -->
@@ -287,6 +288,7 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
     </div>
     <div id="gs-list"></div>
   </div>
+  <div class="card"><div class="card-title">Gastos por Categoria</div><canvas id="gs-pizza" width="220" height="220" style="display:block;margin:0 auto"></canvas><div id="gs-pizza-legend" style="margin-top:14px"></div></div>
 </section>
 
 <!-- CONTAS -->
@@ -394,6 +396,57 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
         <label>Data de vencimento</label><input type="date" id="edit-venc">
       </div>
       <button class="btn bd" onclick="saveEdit()">✓ Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR CORRIDA -->
+
+<div class="modal-bg" id="edit-cr-modal">
+  <div class="modal">
+    <div class="modal-title">Editar Corrida <button class="modal-close" onclick="closeEditCr()">✕ Fechar</button></div>
+    <div class="form">
+      <input type="hidden" id="ecr-id">
+      <div class="fi-row">
+        <div class="fi"><label>Data</label><input type="date" id="ecr-data"></div>
+        <div class="fi"><label>App</label><select id="ecr-app"><option>Uber</option><option>99</option><option>InDrive</option><option>Germana</option><option>Outros</option></select></div>
+      </div>
+      <div class="fi"><label>Valor (R$)</label><input type="number" id="ecr-val" step="0.01" min="0" inputmode="decimal"></div>
+      <div class="fi"><label>Obs (opcional)</label><input type="text" id="ecr-obs"></div>
+      <button class="btn bd" onclick="saveEditCr()">✓ Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR GASTO -->
+
+<div class="modal-bg" id="edit-gs-modal">
+  <div class="modal">
+    <div class="modal-title">Editar Gasto <button class="modal-close" onclick="closeEditGs()">✕ Fechar</button></div>
+    <div class="form">
+      <input type="hidden" id="egs-id">
+      <div class="fi-row">
+        <div class="fi"><label>Valor (R$)</label><input type="number" id="egs-val" step="0.01" min="0" inputmode="decimal"></div>
+        <div class="fi"><label>Data</label><input type="date" id="egs-data"></div>
+      </div>
+      <div class="fi"><label>Descrição</label><input type="text" id="egs-desc"></div>
+      <div class="fi"><label>Categoria</label>
+        <select id="egs-cat">
+          <option value="⛽ Gasolina / Álcool">⛽ Gasolina / Álcool</option>
+          <option value="⛽ Gasolina Onix">⛽ Gasolina Onix</option>
+          <option value="⛽ Gasolina Corolla">⛽ Gasolina Corolla</option>
+          <option value="💼 Gastos Trabalhando">💼 Gastos Trabalhando</option>
+          <option value="🔧 Manutenção">🔧 Manutenção</option>
+          <option value="🍽 Alimentação">🍽 Alimentação</option>
+          <option value="🏠 Aluguel">🏠 Aluguel</option>
+          <option value="💡 Luz / Água / Gás">💡 Luz / Água / Gás</option>
+          <option value="📱 Celular / Internet">📱 Celular / Internet</option>
+          <option value="🏥 Saúde">🏥 Saúde</option>
+          <option value="📋 Contas">📋 Contas</option>
+          <option value="🛒 Outros">🛒 Outros</option>
+        </select>
+      </div>
+      <button class="btn bd" onclick="saveEditGs()">✓ Salvar</button>
     </div>
   </div>
 </div>
@@ -586,7 +639,8 @@ function renderCorridas(){
       ${c.obs?`<div class="ri-app">${c.obs}</div>`:''}
     </div>
     <div class="ri-val">${BRL(c.val)}</div>
-    <button class="bsm br-btn" onclick="delCorrida(${c.id})" style="margin-left:6px">🗑️</button>
+    <button class="bsm bedit" onclick="openEditCr(${c.id})" style="margin-left:6px">✏️</button>
+    <button class="bsm br-btn" onclick="delCorrida(${c.id})" style="margin-left:4px">🗑️</button>
   </div>`).join('');
 }
 
@@ -632,7 +686,8 @@ function renderGastos(){
     <div class="gi-ico">${ico[g.cat]||'💸'}</div>
     <div class="gi-body"><div class="gi-desc">${g.desc}</div><div class="gi-cat">${g.cat} · ${g.data}</div></div>
     <div class="gi-val">${BRL(g.val)}</div>
-    <button class="bsm br-btn" onclick="delGasto(${g.id})" style="margin-left:6px">🗑️</button>
+    <button class="bsm bedit" onclick="openEditGs(${g.id})" style="margin-left:6px">✏️</button>
+    <button class="bsm br-btn" onclick="delGasto(${g.id})" style="margin-left:4px">🗑️</button>
   </div>`).join('');
 }
 
@@ -834,7 +889,112 @@ function renderDash(){
   le.innerHTML=days.map((d,i)=>{const dw=new Date(d).getDay();const t=d===td;return `<div class="spark-label${t?' td':''}">${t?'Hj':dn[dw]}</div>`;}).join('');
 }
 
-function render(){renderDash();renderCorridas();renderGastos();renderContas();renderPlano();}
+
+// EDIT CORRIDA
+function openEditCr(id){
+  const c=S.corridas.find(c=>c.id===id);if(!c)return;
+  document.getElementById('ecr-id').value=id;
+  document.getElementById('ecr-data').value=c.data;
+  document.getElementById('ecr-app').value=c.app;
+  document.getElementById('ecr-val').value=c.val;
+  document.getElementById('ecr-obs').value=c.obs||'';
+  document.getElementById('edit-cr-modal').classList.add('open');
+}
+function closeEditCr(){document.getElementById('edit-cr-modal').classList.remove('open');}
+function saveEditCr(){
+  const id=parseInt(document.getElementById('ecr-id').value);
+  const c=S.corridas.find(c=>c.id===id);if(!c)return;
+  c.data=document.getElementById('ecr-data').value;
+  c.app=document.getElementById('ecr-app').value;
+  c.val=parseFloat(document.getElementById('ecr-val').value);
+  c.obs=document.getElementById('ecr-obs').value.trim();
+  save();closeEditCr();toast('✓ Corrida atualizada!');render();
+}
+
+// EDIT GASTO
+function openEditGs(id){
+  const g=S.gastos.find(g=>g.id===id);if(!g)return;
+  document.getElementById('egs-id').value=id;
+  document.getElementById('egs-val').value=g.val;
+  document.getElementById('egs-data').value=g.data;
+  document.getElementById('egs-desc').value=g.desc;
+  document.getElementById('egs-cat').value=g.cat;
+  document.getElementById('edit-gs-modal').classList.add('open');
+}
+function closeEditGs(){document.getElementById('edit-gs-modal').classList.remove('open');}
+function saveEditGs(){
+  const id=parseInt(document.getElementById('egs-id').value);
+  const g=S.gastos.find(g=>g.id===id);if(!g)return;
+  g.val=parseFloat(document.getElementById('egs-val').value);
+  g.data=document.getElementById('egs-data').value;
+  g.desc=document.getElementById('egs-desc').value.trim();
+  g.cat=document.getElementById('egs-cat').value;
+  save();closeEditGs();toast('✓ Gasto atualizado!');render();
+}
+
+// PIZZA CHART
+function drawPizza(canvasId, legendId, data){
+  const canvas=document.getElementById(canvasId);
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const W=220,cx=110,cy=110,r=90,ri=45;
+  ctx.clearRect(0,0,W,W);
+  const total=data.reduce((s,d)=>s+d.val,0);
+  if(!total){ctx.fillStyle='var(--soft)';ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fill();return;}
+  let start=-Math.PI/2;
+  data.forEach(d=>{
+    const angle=(d.val/total)*Math.PI*2;
+    ctx.beginPath();ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,r,start,start+angle);
+    ctx.closePath();ctx.fillStyle=d.color;ctx.fill();
+    start+=angle;
+  });
+  // donut hole
+  ctx.beginPath();ctx.arc(cx,cy,ri,0,Math.PI*2);
+  ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--w').trim()||'#fff';
+  ctx.fill();
+  // center text
+  ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--ink').trim()||'#0e1120';
+  ctx.font='bold 13px Plus Jakarta Sans';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('Total',cx,cy-8);
+  ctx.font='bold 12px Plus Jakarta Sans';
+  ctx.fillText('R$'+total.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,'.'),cx,cy+9);
+
+  // legend
+  const leg=document.getElementById(legendId);
+  leg.innerHTML=data.map(d=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--line)">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:10px;height:10px;border-radius:3px;background:${d.color};flex-shrink:0"></div>
+        <span style="font-size:.8rem;font-weight:600;color:var(--body)">${d.label}</span>
+      </div>
+      <div style="text-align:right">
+        <span style="font-family:'Clash Display',sans-serif;font-size:.82rem;font-weight:700;color:var(--ink)">R$${d.val.toFixed(2).replace('.',',')}</span>
+        <span style="font-size:.68rem;color:var(--muted);margin-left:5px">${Math.round(d.val/total*100)}%</span>
+      </div>
+    </div>`).join('');
+}
+
+function renderPizzas(){
+  const mes=today().slice(0,7);
+  const appColors={'Uber':'#1dbf73','99':'#f5a623','InDrive':'#3557f0','Germana':'#7c5cbf','Outros':'#8e96b0'};
+  // corridas pizza por app
+  const appsMap={};
+  S.corridas.filter(c=>c.data.startsWith(mes)).forEach(c=>{appsMap[c.app]=(appsMap[c.app]||0)+c.val;});
+  const crData=Object.entries(appsMap).map(([app,val])=>({label:app,val,color:appColors[app]||'#8e96b0'}));
+  if(crData.length) drawPizza('cr-pizza','cr-pizza-legend',crData);
+  else{const el=document.getElementById('cr-pizza-legend');if(el)el.innerHTML='<div class="empty"><div class="empty-ico">🍕</div><p>Sem dados este mês</p></div>';}
+
+  // gastos pizza por categoria
+  const catColors={'⛽ Gasolina / Álcool':'#f59e0b','⛽ Gasolina Onix':'#f97316','⛽ Gasolina Corolla':'#ef4444','💼 Gastos Trabalhando':'#3557f0','🔧 Manutenção':'#8b5cf6','🍽 Alimentação':'#10b981','🏠 Aluguel':'#06b6d4','💡 Luz / Água / Gás':'#eab308','📱 Celular / Internet':'#6366f1','🏥 Saúde':'#ec4899','📋 Contas':'#14b8a6','🛒 Outros':'#8e96b0'};
+  const catMap={};
+  S.gastos.filter(g=>g.data.startsWith(mes)).forEach(g=>{catMap[g.cat]=(catMap[g.cat]||0)+g.val;});
+  const gsData=Object.entries(catMap).sort((a,b)=>b[1]-a[1]).map(([cat,val])=>({label:cat,val,color:catColors[cat]||'#8e96b0'}));
+  if(gsData.length) drawPizza('gs-pizza','gs-pizza-legend',gsData);
+  else{const el=document.getElementById('gs-pizza-legend');if(el)el.innerHTML='<div class="empty"><div class="empty-ico">🍕</div><p>Sem dados este mês</p></div>';}
+}
+
+function render(){renderDash();renderCorridas();renderGastos();renderContas();renderPlano();renderPizzas();}
 render();
 
 if('serviceWorker' in navigator){
