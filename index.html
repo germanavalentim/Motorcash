@@ -707,10 +707,12 @@ function renderPlano(){
   const td=today();
   const all=[...S.contas].sort((a,b)=>new Date(a.venc)-new Date(b.venc));
   const meta=calcMeta();
-  const hojeG=S.corridas.filter(c=>c.data===td).reduce((s,c)=>s+c.val,0);
+  const hojeCorr=S.corridas.filter(c=>c.data===td).reduce((s,c)=>s+c.val,0);
+  const hojeGast=S.gastos.filter(g=>g.data===td).reduce((s,g)=>s+g.val,0);
+  const hojeG=Math.max(0,hojeCorr-hojeGast);
   const falta=Math.max(0,meta-hojeG),bateu=meta>0&&hojeG>=meta;
   document.getElementById('pl-meta-dia').textContent=BRL(meta);
-  document.getElementById('pl-hoje-pill').textContent='Hoje: '+BRL(hojeG);
+  document.getElementById('pl-hoje-pill').textContent='Hoje: '+BRL(hojeG)+' líq.';
   document.getElementById('pl-falta-pill').textContent=bateu?'✓ Meta batida!':'Falta: '+BRL(falta);
   const em7=new Date();em7.setDate(em7.getDate()+7);const em7s=em7.toISOString().slice(0,10);
   const cs7=S.contas.filter(c=>c.venc<=em7s);
@@ -771,7 +773,10 @@ function renderDash(){
   const gastos=S.gastos.filter(g=>g.data.startsWith(mes)).reduce((s,g)=>s+g.val,0);
   const saldo=ganhos-gastos;
   const pend=S.contas,pagosMes=S.contasHist.filter(h=>h.dataPago.startsWith(mes));
-  const meta=calcMeta(),hojeG=S.corridas.filter(c=>c.data===td).reduce((s,c)=>s+c.val,0);
+  const meta=calcMeta();
+  const hojeCorr=S.corridas.filter(c=>c.data===td).reduce((s,c)=>s+c.val,0);
+  const hojeGastDia=S.gastos.filter(g=>g.data===td).reduce((s,g)=>s+g.val,0);
+  const hojeG=Math.max(0,hojeCorr-hojeGastDia);
   const se=document.getElementById('d-saldo');
   se.textContent=BRL(saldo);se.className='hero-val'+(saldo<0?' neg':'');
   document.getElementById('d-g-pill').textContent='Ganhos '+BRL(ganhos);
@@ -788,7 +793,7 @@ function renderDash(){
     const falta=Math.max(0,meta-hojeG),bateu=hojeG>=meta;
     fv.textContent=bateu?'Meta batida! 🎉':BRL(falta);
     fv.className='mc-val '+(bateu?'ok':falta>meta*.5?'bad':'warn');
-    fs.textContent=bateu?'Você fez '+BRL(hojeG)+' hoje':'Você fez '+BRL(hojeG)+' de '+BRL(meta)+' necessários';
+    fs.textContent=bateu?'Você fez '+BRL(hojeCorr)+' (líq. '+BRL(hojeG)+') hoje':'Líquido hoje: '+BRL(hojeG)+' de '+BRL(meta)+' necessários';
     bw.style.display='block';const pct=Math.min(100,Math.round(hojeG/meta*100));
     bf.style.width=pct+'%';bf.style.background=bateu?'var(--g)':pct>50?'var(--a)':'var(--b)';
   }
