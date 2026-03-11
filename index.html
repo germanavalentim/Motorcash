@@ -492,7 +492,7 @@ function toggleDark(){dark=!dark;applyDark();}
 applyDark();
 
 const BRL=n=>'R$ '+Number(n).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');
-const today=()=>new Date().toISOString().slice(0,10);
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
 const daysTo=(a,b)=>Math.max(0,Math.ceil((new Date(b)-new Date(a))/86400000));
 
 function toast(m,err=false){const t=document.getElementById('toast');t.textContent=m;t.style.background=err?'var(--r)':'var(--ink)';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
