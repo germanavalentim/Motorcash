@@ -621,9 +621,7 @@ function addCorrida(){
   const app=document.getElementById('cr-app').value;
   const obs=document.getElementById('cr-obs').value.trim();
   if(!val||val<=0||!data){toast('Preencha data e valor',true);return;}
-  const exist=S.corridas.find(c=>c.data===data&&c.app===app);
-  if(exist){exist.val+=val;if(obs)exist.obs=obs;}
-  else S.corridas.unshift({id:Date.now(),data,val,app,obs});
+  S.corridas.unshift({id:Date.now(),data,val,app,obs});
   save();document.getElementById('cr-val').value='';document.getElementById('cr-obs').value='';
   toast('✓ Corrida registrada!');render();
 }
