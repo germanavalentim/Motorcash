@@ -600,7 +600,7 @@ applyDark();
 
 const BRL=n=>'R$ '+Number(n).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
-const daysTo=(a,b)=>Math.max(0,Math.ceil((new Date(b)-new Date(a))/86400000));
+const daysTo=(a,b)=>{const da=new Date(a+'T00:00:00'),db=new Date(b+'T00:00:00');return Math.max(0,Math.ceil((db-da)/86400000));};
 
 function toast(m,err=false){const t=document.getElementById('toast');t.textContent=m;t.style.background=err?'var(--r)':'var(--ink)';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
 
@@ -916,16 +916,22 @@ function renderPlano(){
   if(!all.length){pl.innerHTML='<div class="empty"><div class="empty-ico">🎯</div><p>Sem contas cadastradas</p></div>';}
   else{
     const pal=['#00b87a','#3557f0','#f59e0b','#ef3c54','#7c5cbf','#0ea5e9'];
+    const mes=td.slice(0,7);
+    const totalGanhos=S.corridas.filter(c=>c.data.startsWith(mes)).reduce((s,c)=>s+c.val,0);
+    const totalGastos=S.gastos.filter(g=>g.data.startsWith(mes)).reduce((s,g)=>s+g.val,0);
+    let saldoRest=Math.max(0,totalGanhos-totalGastos);
     pl.innerHTML=all.map((c,i)=>{
       const dias=Math.max(1,daysTo(td,c.venc)),md=c.val/dias,col=pal[i%pal.length];
-      const pct=hojeG>0?Math.min(100,Math.round(hojeG/md*100)):0;
+      const cobertura=Math.min(saldoRest,c.val);
+      const pct=Math.min(100,Math.round(cobertura/c.val*100));
+      saldoRest=Math.max(0,saldoRest-c.val);
       return `<div class="ci">
         <div class="ci-ico" style="background:${col}28;color:${col}">${c.cat.split(' ')[0]}</div>
         <div class="ci-body">
           <div class="ci-name">${c.nome}</div>
           <div class="ci-meta">Vence em ${dias} dia${dias!==1?'s':''} · ${c.venc}</div>
           <div style="margin-top:7px">
-            <div style="display:flex;justify-content:space-between;font-size:.65rem;color:var(--muted);margin-bottom:3px"><span>Progresso hoje</span><span>${pct}%</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:.65rem;color:var(--muted);margin-bottom:3px"><span>Cobertura do saldo</span><span>${pct}%</span></div>
             <div class="pb"><div class="pbf" style="width:${pct}%;background:${col}"></div></div>
           </div>
         </div>
