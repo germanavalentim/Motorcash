@@ -185,11 +185,12 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
 
 <section id="pg-dash" class="page on">
   <div class="hero" onclick="openCarteiras()" style="cursor:pointer">
-    <div class="hero-eye">SALDO DO MÊS</div>
-    <div class="hero-val" id="d-saldo">R$ 0,00</div>
+    <div class="hero-eye">EM CAIXA</div>
+    <div class="hero-val" id="d-caixa">R$ 0,00</div>
     <div class="hero-row">
       <div class="hpill"><span class="hpill-dot" style="background:#4ade80"></span><span id="d-g-pill">Ganhos R$ 0,00</span></div>
       <div class="hpill"><span class="hpill-dot" style="background:#f87171"></span><span id="d-gs-pill">Gastos R$ 0,00</span></div>
+      <div class="hpill"><span class="hpill-dot" style="background:#a5b4fc"></span><span id="d-saldo-pill">Saldo R$ 0,00</span></div>
     </div>
   </div>
   <div id="d-neg-alert"></div>
@@ -240,7 +241,6 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
       </div>
       <div class="fi"><label>Valor (R$)</label><input type="number" id="cr-val" placeholder="0,00" step="0.01" min="0" inputmode="decimal"></div>
       <div class="fi"><label>Obs (opcional)</label><input type="text" id="cr-obs" placeholder="Ex: dia fraco, chuva..."></div>
-      <div class="fi"><label>Banco (opcional)</label><select id="cr-banco"><option value="">Nenhum</option><option value="nubank">🟣 Nubank</option><option value="santander">🔴 Santander</option><option value="mercadopago">🔵 Mercado Pago</option></select></div>
       <button class="btn bd" onclick="addCorrida()">+ Registrar</button>
     </div>
   </div>
@@ -282,7 +282,6 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
         <label>Nome de quem vai receber</label>
         <input type="text" id="gs-emp-nome" placeholder="Ex: João Silva...">
       </div>
-      <div class="fi"><label>Banco (opcional)</label><select id="gs-banco"><option value="">Nenhum</option><option value="nubank">🟣 Nubank</option><option value="santander">🔴 Santander</option><option value="mercadopago">🔵 Mercado Pago</option></select></div>
       <div class="fi" id="gs-sub-wrap" style="display:none">
         <label>Qual conta?</label>
         <select id="gs-sub" onchange="onSubContaChange()"><option value="">Selecione a conta...</option></select>
@@ -422,46 +421,29 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
 <div class="modal-bg" id="carteiras-modal">
   <div class="modal">
     <div class="modal-title">💳 Minhas Carteiras <button class="modal-close" onclick="closeCarteiras()">✕</button></div>
-    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px">
-      <div class="cart-item" style="display:flex;align-items:center;justify-content:space-between;background:var(--soft);border-radius:13px;padding:14px 16px">
-        <div style="display:flex;align-items:center;gap:10px">
-          <div style="width:36px;height:36px;border-radius:50%;background:#820000;display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:#fff;font-weight:900;font-family:serif">S</div>
-          <span style="font-weight:700;font-size:.95rem">Santander</span>
-        </div>
+    <!-- Conta -->
+    <div style="background:var(--soft);border-radius:13px;padding:16px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
         <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-family:'Clash Display',sans-serif;font-size:1rem;font-weight:700" id="saldo-santander">R$ 0,00</span>
-          <button class="bsm bedit" onclick="editCarteira('santander')">✏️</button>
-          <button class="bsm" style="background:var(--bbg);color:var(--b)" onclick="openTransf('santander')">↗️</button>
+          <div style="width:36px;height:36px;border-radius:50%;background:var(--b);display:flex;align-items:center;justify-content:center;font-size:1.1rem">💰</div>
+          <span style="font-weight:700;font-size:.95rem">Conta</span>
         </div>
+        <span style="font-family:'Clash Display',sans-serif;font-size:1.1rem;font-weight:700;color:var(--g)" id="cart-conta-val">R$ 0,00</span>
       </div>
-      <div class="cart-item" style="display:flex;align-items:center;justify-content:space-between;background:var(--soft);border-radius:13px;padding:14px 16px">
-        <div style="display:flex;align-items:center;gap:10px">
-          <div style="width:36px;height:36px;border-radius:50%;background:#820ad1;display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:#fff;font-weight:900">N</div>
-          <span style="font-weight:700;font-size:.95rem">Nubank</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-family:'Clash Display',sans-serif;font-size:1rem;font-weight:700" id="saldo-nubank">R$ 0,00</span>
-          <button class="bsm bedit" onclick="editCarteira('nubank')">✏️</button>
-          <button class="bsm" style="background:var(--bbg);color:var(--b)" onclick="openTransf('nubank')">↗️</button>
-        </div>
-      </div>
-      <div class="cart-item" style="display:flex;align-items:center;justify-content:space-between;background:var(--soft);border-radius:13px;padding:14px 16px">
-        <div style="display:flex;align-items:center;gap:10px">
-          <div style="width:36px;height:36px;border-radius:50%;background:#009ee3;display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:#fff;font-weight:900">M</div>
-          <span style="font-weight:700;font-size:.95rem">Mercado Pago</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-family:'Clash Display',sans-serif;font-size:1rem;font-weight:700" id="saldo-mercadopago">R$ 0,00</span>
-          <button class="bsm bedit" onclick="editCarteira('mercadopago')">✏️</button>
-          <button class="bsm" style="background:var(--bbg);color:var(--b)" onclick="openTransf('mercadopago')">↗️</button>
-        </div>
-      </div>
+      <div style="font-size:.72rem;color:var(--muted);margin-top:4px">Espelha o saldo acumulado automaticamente</div>
+      <button class="btn bd" onclick="openTransfReserva()" style="margin-top:12px;padding:10px">↗️ Transferir para Reserva</button>
     </div>
-    <div style="background:var(--gbg);border-radius:13px;padding:13px 16px;display:flex;justify-content:space-between;align-items:center">
-      <span style="font-size:.8rem;font-weight:700;color:var(--g)">TOTAL</span>
-      <span style="font-family:'Clash Display',sans-serif;font-size:1.1rem;font-weight:700;color:var(--g)" id="saldo-total-cart">R$ 0,00</span>
+    <!-- Reserva -->
+    <div style="background:var(--gbg);border:1.5px solid #7de5b0;border-radius:13px;padding:16px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:36px;height:36px;border-radius:50%;background:var(--g);display:flex;align-items:center;justify-content:center;font-size:1.1rem">🛡️</div>
+          <span style="font-weight:700;font-size:.95rem">Reserva de Emergência</span>
+        </div>
+        <span style="font-family:'Clash Display',sans-serif;font-size:1.1rem;font-weight:700;color:var(--g)" id="cart-reserva-val">R$ 0,00</span>
+      </div>
+      <div style="font-size:.72rem;color:var(--muted);margin-top:4px">Não entra no saldo total. Só muda via transferência.</div>
     </div>
-    <div style="font-size:.72rem;color:var(--muted);margin-top:10px;text-align:center">Toque em ✏️ para atualizar o saldo de cada banco</div>
   </div>
 </div>
 
@@ -469,13 +451,8 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
 
 <div class="modal-bg" id="transf-modal">
   <div class="modal">
-    <div class="modal-title" id="transf-title">Transferir <button class="modal-close" onclick="closeTransf()">✕</button></div>
+    <div class="modal-title">↗️ Transferir para Reserva <button class="modal-close" onclick="closeTransf()">✕</button></div>
     <div class="form">
-      <input type="hidden" id="transf-origem">
-      <div class="fi">
-        <label>Transferir para</label>
-        <select id="transf-destino"></select>
-      </div>
       <div class="fi">
         <label>Valor (R$)</label>
         <input type="number" id="transf-val" step="0.01" min="0" inputmode="decimal" placeholder="0,00">
@@ -508,7 +485,6 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
       <input type="hidden" id="div-id">
       <div class="fi"><label>Valor recebido (R$)</label><input type="number" id="div-val" step="0.01" min="0" inputmode="decimal"></div>
       <div class="fi"><label>Data</label><input type="date" id="div-data"></div>
-      <div class="fi"><label>Banco (opcional)</label><select id="div-banco"><option value="">Nenhum</option><option value="nubank">🟣 Nubank</option><option value="santander">🔴 Santander</option><option value="mercadopago">🔵 Mercado Pago</option></select></div>
       <button class="btn bg" onclick="receberDivida()">✓ Recebi!</button>
     </div>
   </div>
@@ -969,11 +945,16 @@ function renderDash(){
   const hojeCorr=S.corridas.filter(c=>c.data===td).reduce((s,c)=>s+c.val,0);
   const hojeGastDia=S.gastos.filter(g=>g.data===td).reduce((s,g)=>s+g.val,0);
   const hojeG=Math.max(0,hojeCorr-hojeGastDia);
-  const se=document.getElementById('d-saldo');
-  se.textContent=BRL(saldo);se.className='hero-val'+(saldo<0?' neg':'');
+  // em caixa = acumulado total
+  const totalGanhosAll=S.corridas.reduce((s,c)=>s+c.val,0);
+  const totalGastosAll=S.gastos.reduce((s,g)=>s+g.val,0);
+  const caixaVal=Math.max(0,totalGanhosAll-totalGastosAll);
+  const ce=document.getElementById('d-caixa');
+  ce.textContent=BRL(caixaVal);ce.className='hero-val'+(caixaVal<=0?' neg':'');
   document.getElementById('d-g-pill').textContent='Ganhos '+BRL(ganhos);
   document.getElementById('d-gs-pill').textContent='Gastos '+BRL(gastos);
-  document.getElementById('d-neg-alert').innerHTML=saldo<0?`<div class="neg-alert">⚠️ <span>Saldo negativo! Você gastou <strong>${BRL(Math.abs(saldo))}</strong> a mais este mês.</span></div>`:'';
+  document.getElementById('d-saldo-pill').textContent='Saldo '+BRL(saldo);
+  document.getElementById('d-neg-alert').innerHTML=saldo<0?`<div class="neg-alert">⚠️ <span>Saldo negativo este mês! Gastou <strong>${BRL(Math.abs(saldo))}</strong> a mais.</span></div>`:'';
   const nextEl=document.getElementById('d-next-bill');
   const nx=[...pend].sort((a,b)=>new Date(a.venc)-new Date(b.venc))[0];
   if(nx){const d=daysTo(td,nx.venc);const lbl=d===0?'Vence hoje!':d===1?'Vence amanhã!':'Vence em '+d+' dias';
@@ -1063,30 +1044,24 @@ function saveCarteira(){
 }
 
 
-// ══ TRANSFERÊNCIA ENTRE CONTAS ══
-function openTransf(origem){
-  document.getElementById('transf-origem').value=origem;
-  const b=BANCOS[origem];
-  document.getElementById('transf-title').innerHTML='↗️ Transferir do '+b.nome+' <button class="modal-close" onclick="closeTransf()">✕</button>';
-  const saldo=S.carteiras[origem]||0;
-  document.getElementById('transf-info').textContent='Saldo disponível no '+b.nome+': '+BRL(saldo);
-  // monta opções de destino (todos exceto origem)
-  const opts=Object.keys(BANCOS).filter(k=>k!==origem).map(k=>`<option value="${k}">${BANCOS[k].nome}</option>`).join('');
-  document.getElementById('transf-destino').innerHTML=opts;
+// ══ TRANSFERÊNCIA PARA RESERVA ══
+function openTransfReserva(){
+  const caixa=calcCaixa();
+  document.getElementById('transf-info').textContent='Em caixa disponível: '+BRL(caixa);
   document.getElementById('transf-val').value='';
   document.getElementById('transf-modal').classList.add('open');
 }
 function closeTransf(){document.getElementById('transf-modal').classList.remove('open');}
 function fazerTransf(){
-  const origem=document.getElementById('transf-origem').value;
-  const destino=document.getElementById('transf-destino').value;
   const val=parseFloat(document.getElementById('transf-val').value);
   if(!val||val<=0){toast('Informe o valor',true);return;}
-  if((S.carteiras[origem]||0)<val){toast('Saldo insuficiente!',true);return;}
-  S.carteiras[origem]-=val;
-  S.carteiras[destino]=(S.carteiras[destino]||0)+val;
-  save();closeTransf();renderCarteiras();
-  toast('✓ Transferido '+BRL(val)+' para '+BANCOS[destino].nome+'!');
+  const caixa=calcCaixa();
+  if(val>caixa){toast('Valor maior que o caixa!',true);return;}
+  // registra como gasto especial pra sair do caixa
+  S.gastos.unshift({id:Date.now(),val,desc:'Transferência para Reserva',cat:'🛡️ Reserva',data:today()});
+  S.carteiras.reserva=(S.carteiras.reserva||0)+val;
+  save();closeTransf();renderCarteiras();render();
+  toast('✓ '+BRL(val)+' transferido para a Reserva!');
 }
 
 // ══ DÍVIDAS ══
