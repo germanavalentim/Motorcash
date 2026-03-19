@@ -443,6 +443,7 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
         <span style="font-family:'Clash Display',sans-serif;font-size:1.1rem;font-weight:700;color:var(--g)" id="cart-reserva-val">R$ 0,00</span>
       </div>
       <div style="font-size:.72rem;color:var(--muted);margin-top:4px">Não entra no saldo total. Só muda via transferência.</div>
+      <button class="btn bd" onclick="openRetirarReserva()" style="margin-top:12px;padding:10px;background:var(--r)">⬇️ Retirar da Reserva</button>
     </div>
   </div>
 </div>
@@ -1004,6 +1005,11 @@ function renderDash(){
 
 
 // ══ CARTEIRAS ══
+function calcCaixa(){
+  const ganhos=S.corridas.reduce((s,c)=>s+c.val,0);
+  const gastos=S.gastos.reduce((s,g)=>s+g.val,0);
+  return Math.max(0,ganhos-gastos);
+}
 
 if(!S.carteiras){
   // primeira vez: coloca saldo do mês todo no Santander
@@ -1037,19 +1043,42 @@ function openTransfReserva(){
   const caixa=calcCaixa();
   document.getElementById('transf-info').textContent='Em caixa disponível: '+BRL(caixa);
   document.getElementById('transf-val').value='';
+  document.getElementById('transf-modal').dataset.modo='depositar';
   document.getElementById('transf-modal').classList.add('open');
+  document.querySelector('#transf-modal .modal-title').innerHTML='↗️ Transferir para Reserva <button class="modal-close" onclick="closeTransf()">✕</button>';
 }
 function closeTransf(){document.getElementById('transf-modal').classList.remove('open');}
 function fazerTransf(){
   const val=parseFloat(document.getElementById('transf-val').value);
   if(!val||val<=0){toast('Informe o valor',true);return;}
-  const caixa=calcCaixa();
-  if(val>caixa){toast('Valor maior que o caixa!',true);return;}
-  // registra como gasto especial pra sair do caixa
-  S.gastos.unshift({id:Date.now(),val,desc:'Transferência para Reserva',cat:'🛡️ Reserva',data:today()});
-  S.carteiras.reserva=(S.carteiras.reserva||0)+val;
-  save();closeTransf();renderCarteiras();render();
-  toast('✓ '+BRL(val)+' transferido para a Reserva!');
+  const modo=document.getElementById('transf-modal').dataset.modo;
+  if(modo==='retirar'){
+    const reserva=S.carteiras.reserva||0;
+    if(val>reserva){toast('Valor maior que a reserva!',true);return;}
+    // retira da reserva e registra como ganho
+    S.corridas.unshift({id:Date.now(),data:today(),val,app:'🛡️ Reserva',obs:'Retirada da Reserva'});
+    S.carteiras.reserva=reserva-val;
+    save();closeTransf();renderCarteiras();render();
+    toast('✓ '+BRL(val)+' retirado da Reserva!');
+  } else {
+    const caixa=calcCaixa();
+    if(val>caixa){toast('Valor maior que o caixa!',true);return;}
+    S.gastos.unshift({id:Date.now(),val,desc:'Transferência para Reserva',cat:'🛡️ Reserva',data:today()});
+    S.carteiras.reserva=(S.carteiras.reserva||0)+val;
+    save();closeTransf();renderCarteiras();render();
+    toast('✓ '+BRL(val)+' transferido para a Reserva!');
+  }
+  document.getElementById('transf-modal').dataset.modo='';
+}
+
+// ══ RETIRAR DA RESERVA ══
+function openRetirarReserva(){
+  const reserva=S.carteiras.reserva||0;
+  document.getElementById('transf-info').textContent='Reserva disponível: '+BRL(reserva);
+  document.getElementById('transf-val').value='';
+  document.getElementById('transf-modal').dataset.modo='retirar';
+  document.getElementById('transf-modal').classList.add('open');
+  document.querySelector('#transf-modal .modal-title').innerHTML='⬇️ Retirar da Reserva <button class="modal-close" onclick="closeTransf()">✕</button>';
 }
 
 // ══ DÍVIDAS ══
