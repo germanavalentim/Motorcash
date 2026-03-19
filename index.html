@@ -707,10 +707,8 @@ function addCorrida(){
   const app=document.getElementById('cr-app').value;
   const obs=document.getElementById('cr-obs').value.trim();
   if(!val||val<=0||!data){toast('Preencha data e valor',true);return;}
-  const crBanco=document.getElementById('cr-banco').value;
-  if(crBanco&&S.carteiras[crBanco]!==undefined) S.carteiras[crBanco]+=val;
-  S.corridas.unshift({id:Date.now(),data,val,app,obs,banco:crBanco});
-  save();document.getElementById('cr-val').value='';document.getElementById('cr-obs').value='';document.getElementById('cr-banco').value='';
+  S.corridas.unshift({id:Date.now(),data,val,app,obs});
+  save();document.getElementById('cr-val').value='';document.getElementById('cr-obs').value='';
   toast('✓ Corrida registrada!');render();
 }
 function delCorrida(id){
@@ -763,9 +761,7 @@ function addGasto(){
     document.getElementById('gs-emp-nome').value='';
     document.getElementById('gs-emp-wrap').style.display='none';
   }
-  const banco=document.getElementById('gs-banco').value;
-  if(banco&&S.carteiras[banco]!==undefined) S.carteiras[banco]-=val;
-  S.gastos.unshift({id:Date.now(),val,desc,cat:cat==='contas'?'📋 Contas':cat,data,banco});
+  S.gastos.unshift({id:Date.now(),val,desc,cat:cat==='contas'?'📋 Contas':cat,data});
   save();
   document.getElementById('gs-val').value='';document.getElementById('gs-desc').value='';
   document.getElementById('gs-cat').value='';document.getElementById('gs-sub').value='';
