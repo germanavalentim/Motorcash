@@ -1107,15 +1107,11 @@ function receberDivida(){
   const id=parseInt(document.getElementById('div-id').value);
   const val=parseFloat(document.getElementById('div-val').value);
   const data=document.getElementById('div-data').value;
-  const banco=document.getElementById('div-banco').value;
   if(!val||val<=0){toast('Informe o valor recebido',true);return;}
   const d=S.dividas.find(d=>d.id===id);if(!d)return;
   const recebido=Math.min(val,d.restante);
   d.restante=Math.max(0,d.restante-recebido);
-  // registra como ganho
-  S.corridas.unshift({id:Date.now(),data,val:recebido,app:'💸 Recebido',obs:'Dívida: '+d.nome,banco});
-  // atualiza saldo banco
-  if(banco&&S.carteiras[banco]!==undefined) S.carteiras[banco]+=recebido;
+  S.corridas.unshift({id:Date.now(),data,val:recebido,app:'💸 Recebido',obs:'Dívida: '+d.nome});
   save();closeDivModal();toast('✓ Recebimento registrado!');render();
 }
 
