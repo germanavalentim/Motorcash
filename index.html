@@ -1025,12 +1025,6 @@ function renderCarteiras(){
   document.getElementById('cart-conta-val').textContent=BRL(caixa);
   document.getElementById('cart-reserva-val').textContent=BRL(S.carteiras.reserva||0);
 }
-function openTransfReserva(){
-  const caixa=calcCaixa();
-  document.getElementById('transf-info').textContent='Em caixa disponível: '+BRL(caixa);
-  document.getElementById('transf-val').value='';
-  document.getElementById('transf-modal').classList.add('open');
-}
 function closeEditCart(){document.getElementById('edit-cart-modal').classList.remove('open');}
 function saveCarteira(){
   const v=parseFloat(document.getElementById('edit-cart-val').value)||0;
