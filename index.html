@@ -1004,13 +1004,13 @@ function renderDash(){
 
 
 // ══ CARTEIRAS ══
-const BANCOS={santander:{nome:'Santander',cor:'#820000',letra:'S'},nubank:{nome:'Nubank',cor:'#820ad1',letra:'N'},mercadopago:{nome:'Mercado Pago',cor:'#009ee3',letra:'M'}};
+
 if(!S.carteiras){
   // primeira vez: coloca saldo do mês todo no Santander
   const _mes=today().slice(0,7);
   const _g=S.corridas.filter(c=>c.data&&c.data.startsWith(_mes)).reduce((s,c)=>s+c.val,0);
   const _gs=S.gastos.filter(g=>g.data&&g.data.startsWith(_mes)).reduce((s,g)=>s+g.val,0);
-  S.carteiras={santander:Math.max(0,_g-_gs),nubank:0,mercadopago:0};
+  S.carteiras={reserva:0};
   save();
 }
 if(!S.dividas)S.dividas=[];
@@ -1021,26 +1021,20 @@ function openCarteiras(){
 }
 function closeCarteiras(){document.getElementById('carteiras-modal').classList.remove('open');}
 function renderCarteiras(){
-  let total=0;
-  Object.keys(BANCOS).forEach(b=>{
-    const v=S.carteiras[b]||0;
-    document.getElementById('saldo-'+b).textContent=BRL(v);
-    document.getElementById('saldo-'+b).style.color=v<0?'var(--r)':v>0?'var(--g)':'var(--muted)';
-    total+=v;
-  });
-  document.getElementById('saldo-total-cart').textContent=BRL(total);
+  const caixa=calcCaixa();
+  document.getElementById('cart-conta-val').textContent=BRL(caixa);
+  document.getElementById('cart-reserva-val').textContent=BRL(S.carteiras.reserva||0);
 }
-function editCarteira(banco){
-  document.getElementById('edit-cart-banco').value=banco;
-  document.getElementById('edit-cart-title').innerHTML=BANCOS[banco].nome+' — Editar Saldo <button class="modal-close" onclick="closeEditCart()">✕</button>';
-  document.getElementById('edit-cart-val').value=(S.carteiras[banco]||0).toFixed(2);
-  document.getElementById('edit-cart-modal').classList.add('open');
+function openTransfReserva(){
+  const caixa=calcCaixa();
+  document.getElementById('transf-info').textContent='Em caixa disponível: '+BRL(caixa);
+  document.getElementById('transf-val').value='';
+  document.getElementById('transf-modal').classList.add('open');
 }
 function closeEditCart(){document.getElementById('edit-cart-modal').classList.remove('open');}
 function saveCarteira(){
-  const b=document.getElementById('edit-cart-banco').value;
   const v=parseFloat(document.getElementById('edit-cart-val').value)||0;
-  S.carteiras[b]=v;save();closeEditCart();renderCarteiras();toast('✓ Saldo atualizado!');
+  S.carteiras.reserva=v;save();closeEditCart();renderCarteiras();toast('✓ Reserva atualizada!');
 }
 
 
