@@ -375,6 +375,10 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
   <div id="pl-alerts"></div>
   <div class="card"><div class="card-title">Meta por Conta</div><div id="pl-list"></div></div>
   <div class="card"><div class="card-title">Progresso do Mês</div><div id="pl-prog"></div></div>
+  <div class="card">
+    <div class="card-title">Histórico Mensal</div>
+    <div id="hist-meses-list"></div>
+  </div>
 </section>
 
 <!-- MODAL EDITAR -->
@@ -488,6 +492,15 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
       <div class="fi"><label>Data</label><input type="date" id="div-data"></div>
       <button class="btn bg" onclick="receberDivida()">✓ Recebi!</button>
     </div>
+  </div>
+</div>
+
+<!-- MODAL HISTÓRICO MENSAL -->
+
+<div class="modal-bg" id="hist-modal" style="align-items:flex-start;overflow-y:auto">
+  <div class="modal" style="border-radius:24px;margin:20px 0;max-height:90vh;overflow-y:auto">
+    <div class="modal-title" id="hist-modal-title">Histórico <button class="modal-close" onclick="closeHistModal()">✕ Fechar</button></div>
+    <div id="hist-modal-content"></div>
   </div>
 </div>
 
@@ -1247,7 +1260,128 @@ function importData(e){
   e.target.value='';
 }
 
-function render(){renderDash();renderCorridas();renderGastos();renderContas();renderPlano();renderPizzas();renderDividas();}
+
+// ══ HISTÓRICO MENSAL ══
+function renderHistMeses(){
+  const el=document.getElementById('hist-meses-list');
+  // coleta todos os meses com dados
+  const mesesSet=new Set();
+  S.corridas.forEach(c=>{if(c.data)mesesSet.add(c.data.slice(0,7));});
+  S.gastos.forEach(g=>{if(g.data)mesesSet.add(g.data.slice(0,7));});
+  const meses=[...mesesSet].sort((a,b)=>b.localeCompare(a));
+  const mesAtual=today().slice(0,7);
+  const mesesAnteriores=meses.filter(m=>m!==mesAtual);
+  if(!mesesAnteriores.length){
+    el.innerHTML='<div class="empty"><div class="empty-ico">📅</div><p>Nenhum histórico anterior ainda</p></div>';
+    return;
+  }
+  const nomeMes=(m)=>{const[y,mo]=m.split('-');const ns=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];return ns[parseInt(mo)-1]+' '+y;};
+  el.innerHTML=mesesAnteriores.map(m=>{
+    const g=S.corridas.filter(c=>c.data&&c.data.startsWith(m)).reduce((s,c)=>s+c.val,0);
+    const gs=S.gastos.filter(gx=>gx.data&&gx.data.startsWith(m)).reduce((s,gx)=>s+gx.val,0);
+    const saldo=g-gs;
+    return `<div onclick="openHistModal('${m}')" style="display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--line);cursor:pointer">
+      <div>
+        <div style="font-weight:700;font-size:.9rem;color:var(--ink)">${nomeMes(m)}</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:2px">Ganhos ${BRL(g)} · Gastos ${BRL(gs)}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-family:'Clash Display',sans-serif;font-size:.95rem;font-weight:700;color:${saldo>=0?'var(--g)':'var(--r)'}">${BRL(saldo)}</div>
+        <div style="font-size:.68rem;color:var(--muted);margin-top:2px">Ver detalhes ›</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openHistModal(mes){
+  const nomeMes=(m)=>{const[y,mo]=m.split('-');const ns=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];return ns[parseInt(mo)-1]+' '+y;};
+  document.getElementById('hist-modal-title').innerHTML=nomeMes(mes)+' <button class="modal-close" onclick="closeHistModal()">✕ Fechar</button>';
+
+  const corridas=S.corridas.filter(c=>c.data&&c.data.startsWith(mes)).sort((a,b)=>new Date(b.data)-new Date(a.data));
+  const gastos=S.gastos.filter(g=>g.data&&g.data.startsWith(mes)).sort((a,b)=>new Date(b.data)-new Date(a.data));
+  const totalG=corridas.reduce((s,c)=>s+c.val,0);
+  const totalGs=gastos.reduce((s,g)=>s+g.val,0);
+  const saldo=totalG-totalGs;
+
+  // pizza data
+  const appMap={};corridas.forEach(c=>{appMap[c.app]=(appMap[c.app]||0)+c.val;});
+  const catMap={};gastos.forEach(g=>{catMap[g.cat]=(catMap[g.cat]||0)+g.val;});
+  const appColors={'Uber':'#1dbf73','99':'#f5a623','Germana':'#7c5cbf','🎰 Apostas':'#ef3c54','💸 Recebido':'#3557f0','🛡️ Reserva':'#00b87a','Outros':'#8e96b0'};
+  const catColors={'⛽ Gasolina Onix':'#f97316','⛽ Gasolina Corolla':'#ef4444','💼 Gastos Trabalhando':'#3557f0','🎰 Apostas':'#f59e0b','🔧 Manutenção':'#8b5cf6','🍽 Alimentação':'#10b981','🏠 Aluguel':'#06b6d4','📱 Celular / Internet':'#6366f1','📋 Contas':'#14b8a6','🛡️ Reserva':'#00b87a','🛒 Outros':'#8e96b0'};
+
+  const crData=Object.entries(appMap).map(([app,val])=>({label:app,val,color:appColors[app]||'#8e96b0'}));
+  const gsData=Object.entries(catMap).sort((a,b)=>b[1]-a[1]).map(([cat,val])=>({label:cat,val,color:catColors[cat]||'#8e96b0'}));
+
+  const ico={'⛽ Gasolina Onix':'⛽','⛽ Gasolina Corolla':'⛽','💼 Gastos Trabalhando':'💼','🎰 Apostas':'🎰','🔧 Manutenção':'🔧','🍽 Alimentação':'🍽','🏠 Aluguel':'🏠','📱 Celular / Internet':'📱','📋 Contas':'📋','🛡️ Reserva':'🛡️','🛒 Outros':'🛒'};
+
+  document.getElementById('hist-modal-content').innerHTML=`
+    <!-- Resumo -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">
+      <div style="background:var(--gbg);border-radius:12px;padding:12px;text-align:center">
+        <div style="font-size:.62rem;color:var(--g);font-weight:700;letter-spacing:1px;margin-bottom:4px">GANHOS</div>
+        <div style="font-family:'Clash Display',sans-serif;font-size:.95rem;font-weight:700;color:var(--g)">${BRL(totalG)}</div>
+      </div>
+      <div style="background:var(--rbg);border-radius:12px;padding:12px;text-align:center">
+        <div style="font-size:.62rem;color:var(--r);font-weight:700;letter-spacing:1px;margin-bottom:4px">GASTOS</div>
+        <div style="font-family:'Clash Display',sans-serif;font-size:.95rem;font-weight:700;color:var(--r)">${BRL(totalGs)}</div>
+      </div>
+      <div style="background:${saldo>=0?'var(--gbg)':'var(--rbg)'};border-radius:12px;padding:12px;text-align:center">
+        <div style="font-size:.62rem;color:${saldo>=0?'var(--g)':'var(--r)'};font-weight:700;letter-spacing:1px;margin-bottom:4px">SALDO</div>
+        <div style="font-family:'Clash Display',sans-serif;font-size:.95rem;font-weight:700;color:${saldo>=0?'var(--g)':'var(--r)'}">${BRL(saldo)}</div>
+      </div>
+    </div>
+
+    <!-- Pizza Ganhos -->
+    ${crData.length?`<div style="margin-bottom:16px">
+      <div style="font-size:.65rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:10px">Ganhos por App</div>
+      <canvas id="hist-pizza-g" width="200" height="200" style="display:block;margin:0 auto"></canvas>
+      <div id="hist-pizza-g-leg" style="margin-top:10px"></div>
+    </div>`:''}
+
+    <!-- Pizza Gastos -->
+    ${gsData.length?`<div style="margin-bottom:16px">
+      <div style="font-size:.65rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:10px">Gastos por Categoria</div>
+      <canvas id="hist-pizza-gs" width="200" height="200" style="display:block;margin:0 auto"></canvas>
+      <div id="hist-pizza-gs-leg" style="margin-top:10px"></div>
+    </div>`:''}
+
+    <!-- Lista Ganhos -->
+    ${corridas.length?`<div style="margin-bottom:16px">
+      <div style="font-size:.65rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:10px">Ganhos (${corridas.length})</div>
+      ${corridas.map(c=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)">
+        <div>
+          <div style="font-weight:700;font-size:.85rem;color:var(--ink)">${c.app}</div>
+          <div style="font-size:.7rem;color:var(--muted)">${c.data}${c.obs?' · '+c.obs:''}</div>
+        </div>
+        <div style="font-family:'Clash Display',sans-serif;font-size:.9rem;font-weight:700;color:var(--g)">${BRL(c.val)}</div>
+      </div>`).join('')}
+    </div>`:''}
+
+    <!-- Lista Gastos -->
+    ${gastos.length?`<div>
+      <div style="font-size:.65rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:10px">Gastos (${gastos.length})</div>
+      ${gastos.map(g=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)">
+        <div>
+          <div style="font-weight:700;font-size:.85rem;color:var(--ink)">${g.desc}</div>
+          <div style="font-size:.7rem;color:var(--muted)">${g.cat} · ${g.data}</div>
+        </div>
+        <div style="font-family:'Clash Display',sans-serif;font-size:.9rem;font-weight:700;color:var(--r)">${BRL(g.val)}</div>
+      </div>`).join('')}
+    </div>`:''}
+  `;
+
+  document.getElementById('hist-modal').classList.add('open');
+
+  // draw pizzas after render
+  setTimeout(()=>{
+    if(crData.length) drawPizza('hist-pizza-g','hist-pizza-g-leg',crData);
+    if(gsData.length) drawPizza('hist-pizza-gs','hist-pizza-gs-leg',gsData);
+  },50);
+}
+
+function closeHistModal(){document.getElementById('hist-modal').classList.remove('open');}
+
+function render(){renderDash();renderCorridas();renderGastos();renderContas();renderPlano();renderPizzas();renderDividas();renderHistMeses();}
 render();
 
 if('serviceWorker' in navigator){
