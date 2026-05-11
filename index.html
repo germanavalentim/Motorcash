@@ -903,8 +903,8 @@ function renderPlano(){
   else{
     const pal=['#00b87a','#3557f0','#f59e0b','#ef3c54','#7c5cbf','#0ea5e9'];
     const mes=td.slice(0,7);
-    const totalGanhos=S.corridas.filter(c=>c.data.startsWith(mes)).reduce((s,c)=>s+c.val,0);
-    const totalGastos=S.gastos.filter(g=>g.data.startsWith(mes)).reduce((s,g)=>s+g.val,0);
+    const totalGanhos=S.corridas.reduce((s,c)=>s+c.val,0);
+    const totalGastos=S.gastos.reduce((s,g)=>s+g.val,0);
     let saldoRest=Math.max(0,totalGanhos-totalGastos);
     pl.innerHTML=all.map((c,i)=>{
       const dias=Math.max(1,daysTo(td,c.venc)),md=c.val/dias,col=pal[i%pal.length];
