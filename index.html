@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -182,7 +181,6 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
 </header>
 
 <!-- DASHBOARD -->
-
 <section id="pg-dash" class="page on">
   <div class="hero" onclick="openCarteiras()" style="cursor:pointer">
     <div class="hero-eye">EM CAIXA</div>
@@ -225,7 +223,6 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
 </section>
 
 <!-- CORRIDAS -->
-
 <section id="pg-corridas" class="page">
   <div class="sh"><div class="sh-title">Ganhos</div></div>
   <div class="stat-row">
@@ -250,7 +247,6 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
 </section>
 
 <!-- GASTOS -->
-
 <section id="pg-gastos" class="page">
   <div class="sh"><div class="sh-title">Gastos</div></div>
   <div class="card">
@@ -308,7 +304,6 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
 </section>
 
 <!-- CONTAS -->
-
 <section id="pg-contas" class="page">
   <div class="sh"><div class="sh-title">Contas a Pagar</div></div>
   <div class="total-fixo">
@@ -356,7 +351,6 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
 </section>
 
 <!-- PLANO -->
-
 <section id="pg-plano" class="page">
   <div class="sh"><div class="sh-title">Plano de Meta</div></div>
   <div class="hero">
@@ -382,7 +376,6 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
 </section>
 
 <!-- MODAL EDITAR -->
-
 <div class="modal-bg" id="edit-modal">
   <div class="modal">
     <div class="modal-title">Editar Conta <button class="modal-close" onclick="closeModal()">✕ Fechar</button></div>
@@ -420,8 +413,9 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
   </div>
 </div>
 
-<!-- MODAL CARTEIRAS -->
 
+
+<!-- MODAL CARTEIRAS -->
 <div class="modal-bg" id="carteiras-modal">
   <div class="modal">
     <div class="modal-title">💳 Minhas Carteiras <button class="modal-close" onclick="closeCarteiras()">✕</button></div>
@@ -452,8 +446,8 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
   </div>
 </div>
 
-<!-- MODAL TRANSFERÊNCIA -->
 
+<!-- MODAL TRANSFERÊNCIA -->
 <div class="modal-bg" id="transf-modal">
   <div class="modal">
     <div class="modal-title">↗️ Transferir para Reserva <button class="modal-close" onclick="closeTransf()">✕</button></div>
@@ -469,7 +463,6 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
 </div>
 
 <!-- MODAL EDITAR CARTEIRA -->
-
 <div class="modal-bg" id="edit-cart-modal">
   <div class="modal">
     <div class="modal-title" id="edit-cart-title">Editar Saldo <button class="modal-close" onclick="closeEditCart()">✕</button></div>
@@ -482,7 +475,6 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
 </div>
 
 <!-- MODAL RECEBER DÍVIDA -->
-
 <div class="modal-bg" id="div-modal">
   <div class="modal">
     <div class="modal-title">💰 Registrar Recebimento <button class="modal-close" onclick="closeDivModal()">✕</button></div>
@@ -495,8 +487,8 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
   </div>
 </div>
 
-<!-- MODAL HISTÓRICO MENSAL -->
 
+<!-- MODAL HISTÓRICO MENSAL -->
 <div class="modal-bg" id="hist-modal" style="align-items:flex-start;overflow-y:auto">
   <div class="modal" style="border-radius:24px;margin:20px 0;max-height:90vh;overflow-y:auto">
     <div class="modal-title" id="hist-modal-title">Histórico <button class="modal-close" onclick="closeHistModal()">✕ Fechar</button></div>
@@ -505,7 +497,6 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
 </div>
 
 <!-- MODAL EDITAR CORRIDA -->
-
 <div class="modal-bg" id="edit-cr-modal">
   <div class="modal">
     <div class="modal-title">Editar Corrida <button class="modal-close" onclick="closeEditCr()">✕ Fechar</button></div>
@@ -523,7 +514,6 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
 </div>
 
 <!-- MODAL EDITAR GASTO -->
-
 <div class="modal-bg" id="edit-gs-modal">
   <div class="modal">
     <div class="modal-title">Editar Gasto <button class="modal-close" onclick="closeEditGs()">✕ Fechar</button></div>
@@ -555,7 +545,6 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
 </div>
 
 <!-- CONFIRM -->
-
 <div class="confirm-bg" id="confirm-bg">
   <div class="confirm-box">
     <div class="confirm-ico" id="c-ico">🗑️</div>
@@ -736,7 +725,9 @@ function renderCorridas(){
   document.getElementById('cr-mes').textContent=BRL(sorted.filter(c=>c.data.startsWith(td.slice(0,7))).reduce((s,c)=>s+c.val,0));
   const el=document.getElementById('cr-list');
   if(!sorted.length){el.innerHTML='<div class="empty"><div class="empty-ico">💰</div><p>Nenhuma corrida registrada</p></div>';return;}
-  el.innerHTML=sorted.map(c=>`<div class="ri">
+  const crLimit=el.dataset.expanded==='1'?sorted.length:4;
+  const crVisible=sorted.slice(0,crLimit);
+  el.innerHTML=crVisible.map(c=>`<div class="ri">
     <div class="ri-left">
       <div class="ri-date">${c.data===td?'Hoje':c.data} <span class="tag tb" style="font-size:.62rem">${c.app}</span></div>
       ${c.obs?`<div class="ri-app">${c.obs}</div>`:''}
@@ -745,6 +736,14 @@ function renderCorridas(){
     <button class="bsm bedit" onclick="openEditCr(${c.id})" style="margin-left:6px">✏️</button>
     <button class="bsm br-btn" onclick="delCorrida(${c.id})" style="margin-left:4px">🗑️</button>
   </div>`).join('');
+  if(sorted.length>4){
+    const expanded=el.dataset.expanded==='1';
+    el.innerHTML+=`<div style="text-align:center;padding:12px 0">
+      <button onclick="toggleCrList()" style="background:var(--soft);border:none;border-radius:10px;padding:8px 20px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.8rem;font-weight:700;color:var(--body);cursor:pointer">
+        ${expanded?'▲ Mostrar menos':'▼ Ver todos ('+sorted.length+')'}
+      </button>
+    </div>`;
+  }
 }
 
 // GASTOS
@@ -793,13 +792,23 @@ function renderGastos(){
   const el=document.getElementById('gs-list');
   if(!sorted.length){el.innerHTML='<div class="empty"><div class="empty-ico">💸</div><p>Nenhum gasto registrado</p></div>';return;}
   const ico={'⛽ Gasolina / Álcool':'⛽','⛽ Gasolina Onix':'⛽','⛽ Gasolina Corolla':'⛽','💼 Gastos Trabalhando':'💼','🔧 Manutenção':'🔧','🍽 Alimentação':'🍽','🏠 Aluguel':'🏠','💡 Luz / Água / Gás':'💡','📱 Celular / Internet':'📱','🏥 Saúde':'🏥','🛒 Outros':'🛒','📋 Contas':'📋'};
-  el.innerHTML=sorted.map(g=>`<div class="gi">
+  const gsLimit=el.dataset.expanded==='1'?sorted.length:4;
+  const gsVisible=sorted.slice(0,gsLimit);
+  el.innerHTML=gsVisible.map(g=>`<div class="gi">
     <div class="gi-ico">${ico[g.cat]||'💸'}</div>
     <div class="gi-body"><div class="gi-desc">${g.desc}</div><div class="gi-cat">${g.cat} · ${g.data}</div></div>
     <div class="gi-val">${BRL(g.val)}</div>
     <button class="bsm bedit" onclick="openEditGs(${g.id})" style="margin-left:6px">✏️</button>
     <button class="bsm br-btn" onclick="delGasto(${g.id})" style="margin-left:4px">🗑️</button>
   </div>`).join('');
+  if(sorted.length>4){
+    const expanded=el.dataset.expanded==='1';
+    el.innerHTML+=`<div style="text-align:center;padding:12px 0">
+      <button onclick="toggleGsList()" style="background:var(--soft);border:none;border-radius:10px;padding:8px 20px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.8rem;font-weight:700;color:var(--body);cursor:pointer">
+        ${expanded?'▲ Mostrar menos':'▼ Ver todos ('+sorted.length+')'}
+      </button>
+    </div>`;
+  }
 }
 
 // CONTAS
@@ -1381,6 +1390,18 @@ function openHistModal(mes){
 
 function closeHistModal(){document.getElementById('hist-modal').classList.remove('open');}
 
+
+function toggleCrList(){
+  const el=document.getElementById('cr-list');
+  el.dataset.expanded=el.dataset.expanded==='1'?'0':'1';
+  renderCorridas();
+}
+function toggleGsList(){
+  const el=document.getElementById('gs-list');
+  el.dataset.expanded=el.dataset.expanded==='1'?'0':'1';
+  renderGastos();
+}
+
 function render(){renderDash();renderCorridas();renderGastos();renderContas();renderPlano();renderPizzas();renderDividas();renderHistMeses();}
 render();
 
@@ -1396,6 +1417,5 @@ if('serviceWorker' in navigator){
   navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!rf){rf=true;window.location.reload();}});
 }
 </script>
-
 </body>
 </html>
