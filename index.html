@@ -500,10 +500,11 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
 
 <!-- MODAL PRÓXIMAS CONTAS -->
 <div class="modal-bg" id="proximas-modal" style="align-items:flex-end">
-  <div class="modal" style="max-height:85vh;overflow-y:auto">
-    <div class="modal-title">📅 Próximas Contas <button class="modal-close" onclick="document.getElementById('proximas-modal').classList.remove('open')">✕</button></div>
+  <div class="modal" style="max-height:85vh;overflow-y:auto;padding-bottom:80px">
+    <div class="modal-title">📅 Próximas Contas <button class="modal-close" onclick="document.getElementById('proximas-modal').classList.remove('open');_selectedContas=new Set()">✕</button></div>
     <div id="proximas-modal-content"></div>
   </div>
+  <div id="sel-bar" style="display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--b);color:#fff;padding:16px 20px 32px;z-index:999;align-items:center;gap:12px"></div>
 </div>
 
 <!-- MODAL CONTAS ATRASADAS -->
@@ -1453,18 +1454,29 @@ function toggleGsList(){
 
 
 // ══ MODAL PRÓXIMAS CONTAS ══
+let _selectedContas=new Set();
 function openProximasModal(){
+  _selectedContas=new Set();
+  renderProximasModal();
+  document.getElementById('proximas-modal').classList.add('open');
+}
+function renderProximasModal(){
   const td=today();
   const proximas=S.contas.filter(c=>c.venc>=td).sort((a,b)=>new Date(a.venc)-new Date(b.venc));
   const meses=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
   const fmtData=(d)=>{const[y,m,dia]=d.split('-');return dia+' '+meses[parseInt(m)-1]+' '+y;};
-  document.getElementById('proximas-modal-content').innerHTML=!proximas.length
+  const content=document.getElementById('proximas-modal-content');
+  content.innerHTML=!proximas.length
     ?'<div class="empty"><div class="empty-ico">✅</div><p>Nenhuma conta a vencer</p></div>'
     :proximas.map(c=>{
       const dias=daysTo(td,c.venc);
       const cor=dias===0?'var(--r)':dias<=3?'var(--a)':dias<=7?'var(--b)':'var(--g)';
       const lbl=dias===0?'Vence hoje':dias===1?'Amanhã':'Em '+dias+' dias';
-      return `<div style="display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)">
+      const sel=_selectedContas.has(c.id);
+      return `<div onclick="toggleContaSel(${c.id},${c.val})" style="display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--line);cursor:pointer;background:${sel?'var(--bbg)':'transparent'};border-radius:${sel?'12px':'0'};padding-left:${sel?'8px':'0'};transition:all .15s">
+        <div style="width:24px;height:24px;border-radius:50%;border:2px solid ${sel?'var(--b)':'var(--line)'};background:${sel?'var(--b)':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s">
+          ${sel?'<svg width="12" height="12" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" fill="none"/></svg>':''}
+        </div>
         <div style="width:42px;height:42px;border-radius:13px;background:${cor}20;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0">${c.cat.split(' ')[0]}</div>
         <div style="flex:1">
           <div style="font-weight:700;font-size:.92rem;color:var(--ink)">${c.nome}</div>
@@ -1477,7 +1489,24 @@ function openProximasModal(){
         </div>
       </div>`;
     }).join('');
-  document.getElementById('proximas-modal').classList.add('open');
+  updateSelBar();
+}
+function toggleContaSel(id,val){
+  if(_selectedContas.has(id)) _selectedContas.delete(id);
+  else _selectedContas.add(id);
+  renderProximasModal();
+}
+function updateSelBar(){
+  const bar=document.getElementById('sel-bar');
+  if(!bar) return;
+  const total=S.contas.filter(c=>_selectedContas.has(c.id)).reduce((s,c)=>s+c.val,0);
+  const count=_selectedContas.size;
+  if(count>0){
+    bar.style.display='flex';
+    bar.innerHTML=`<div style="flex:1"><div style="font-size:.7rem;color:rgba(255,255,255,.7);margin-bottom:2px">${count} conta${count>1?'s':''} selecionada${count>1?'s':''}</div><div style="font-family:'Clash Display',sans-serif;font-size:1.3rem;font-weight:700">Total: ${BRL(total)}</div></div><button onclick="_selectedContas=new Set();renderProximasModal()" style="background:rgba(255,255,255,.2);border:none;border-radius:10px;padding:8px 14px;color:#fff;font-weight:700;font-size:.8rem;cursor:pointer">Limpar</button>`;
+  } else {
+    bar.style.display='none';
+  }
 }
 
 // ══ MODAL CONTAS ATRASADAS ══
