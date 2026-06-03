@@ -193,6 +193,7 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
   </div>
   <div id="d-neg-alert"></div>
   <div id="d-next-bill"></div>
+  <div id="d-atrasadas"></div>
   <div class="meta-card">
     <div class="mc-label">FALTA PRA PAGAR AS CONTAS HOJE</div>
     <div class="mc-val zero" id="d-falta">—</div>
@@ -493,6 +494,23 @@ body{background:var(--off);color:var(--ink);font-family:'Plus Jakarta Sans',sans
   <div class="modal" style="border-radius:24px;margin:20px 0;max-height:90vh;overflow-y:auto">
     <div class="modal-title" id="hist-modal-title">Histórico <button class="modal-close" onclick="closeHistModal()">✕ Fechar</button></div>
     <div id="hist-modal-content"></div>
+  </div>
+</div>
+
+
+<!-- MODAL PRÓXIMAS CONTAS -->
+<div class="modal-bg" id="proximas-modal" style="align-items:flex-end">
+  <div class="modal" style="max-height:85vh;overflow-y:auto">
+    <div class="modal-title">📅 Próximas Contas <button class="modal-close" onclick="document.getElementById('proximas-modal').classList.remove('open')">✕</button></div>
+    <div id="proximas-modal-content"></div>
+  </div>
+</div>
+
+<!-- MODAL CONTAS ATRASADAS -->
+<div class="modal-bg" id="atrasadas-modal" style="align-items:flex-end">
+  <div class="modal" style="max-height:85vh;overflow-y:auto">
+    <div class="modal-title">🚨 Contas Atrasadas <button class="modal-close" onclick="document.getElementById('atrasadas-modal').classList.remove('open')">✕</button></div>
+    <div id="atrasadas-modal-content"></div>
   </div>
 </div>
 
@@ -975,10 +993,41 @@ function renderDash(){
   document.getElementById('d-saldo-pill').textContent='Saldo '+BRL(saldo);
   document.getElementById('d-neg-alert').innerHTML=saldo<0?`<div class="neg-alert">⚠️ <span>Saldo negativo este mês! Gastou <strong>${BRL(Math.abs(saldo))}</strong> a mais.</span></div>`:'';
   const nextEl=document.getElementById('d-next-bill');
-  const nx=[...pend].sort((a,b)=>new Date(a.venc)-new Date(b.venc))[0];
-  if(nx){const d=daysTo(td,nx.venc);const lbl=d===0?'Vence hoje!':d===1?'Vence amanhã!':'Vence em '+d+' dias';
-    nextEl.innerHTML=`<div class="next-bill"><div class="nb-ico">${nx.cat.split(' ')[0]}</div><div class="nb-body"><div class="nb-label">PRÓXIMA CONTA</div><div class="nb-name">${nx.nome}</div><div class="nb-sub">${lbl} · ${nx.venc}</div></div><div class="nb-val">${BRL(nx.val)}</div></div>`;
-  }else nextEl.innerHTML='';
+  const atrasadas=pend.filter(c=>c.venc<td).sort((a,b)=>new Date(a.venc)-new Date(b.venc));
+  const proximas=pend.filter(c=>c.venc>=td).sort((a,b)=>new Date(a.venc)-new Date(b.venc));
+  const top10=proximas.slice(0,10);
+  // card proximas
+  if(top10.length){
+    const nx=top10[0];
+    const d=daysTo(td,nx.venc);
+    const lbl=d===0?'Vence hoje!':d===1?'Vence amanhã!':'Vence em '+d+' dias';
+    nextEl.innerHTML=`<div class="next-bill" onclick="openProximasModal()" style="cursor:pointer">
+      <div class="nb-ico">${nx.cat.split(' ')[0]}</div>
+      <div class="nb-body">
+        <div class="nb-label">PRÓXIMAS CONTAS · ${proximas.length} no total</div>
+        <div class="nb-name">${nx.nome}</div>
+        <div class="nb-sub">${lbl} · ${nx.venc}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="nb-val">${BRL(nx.val)}</div>
+        <div style="font-size:.65rem;color:var(--a);margin-top:3px">Ver todas ›</div>
+      </div>
+    </div>`;
+  } else nextEl.innerHTML='';
+  // card atrasadas
+  const atrasEl=document.getElementById('d-atrasadas');
+  if(atrasadas.length){
+    const totalAt=atrasadas.reduce((s,c)=>s+c.val,0);
+    atrasEl.innerHTML=`<div onclick="openAtrasadasModal()" style="cursor:pointer;background:var(--rbg);border:1.5px solid #f5a3ae;border-radius:14px;padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px">
+      <div style="font-size:1.4rem">🚨</div>
+      <div style="flex:1">
+        <div style="font-size:.65rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--r);font-weight:700;margin-bottom:2px">CONTAS ATRASADAS</div>
+        <div style="font-family:'Clash Display',sans-serif;font-size:1rem;font-weight:700;color:var(--ink)">${atrasadas.length} conta${atrasadas.length>1?'s':''} em atraso</div>
+        <div style="font-size:.73rem;color:var(--body);margin-top:1px">Total: ${BRL(totalAt)} · Toque para ver</div>
+      </div>
+      <div style="font-family:'Clash Display',sans-serif;font-size:1.1rem;font-weight:700;color:var(--r)">${BRL(totalAt)}</div>
+    </div>`;
+  } else atrasEl.innerHTML='';
   const fv=document.getElementById('d-falta'),fs=document.getElementById('d-falta-sub'),bw=document.getElementById('d-bar-wrap'),bf=document.getElementById('d-bar-fill');
   if(meta===0){fv.textContent='—';fv.className='mc-val zero';fs.textContent='Adicione contas para calcular';bw.style.display='none';}
   else{
@@ -1400,6 +1449,61 @@ function toggleGsList(){
   const el=document.getElementById('gs-list');
   el.dataset.expanded=el.dataset.expanded==='1'?'0':'1';
   renderGastos();
+}
+
+
+// ══ MODAL PRÓXIMAS CONTAS ══
+function openProximasModal(){
+  const td=today();
+  const proximas=S.contas.filter(c=>c.venc>=td).sort((a,b)=>new Date(a.venc)-new Date(b.venc));
+  const meses=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const fmtData=(d)=>{const[y,m,dia]=d.split('-');return dia+' '+meses[parseInt(m)-1]+' '+y;};
+  document.getElementById('proximas-modal-content').innerHTML=!proximas.length
+    ?'<div class="empty"><div class="empty-ico">✅</div><p>Nenhuma conta a vencer</p></div>'
+    :proximas.map(c=>{
+      const dias=daysTo(td,c.venc);
+      const cor=dias===0?'var(--r)':dias<=3?'var(--a)':dias<=7?'var(--b)':'var(--g)';
+      const lbl=dias===0?'Vence hoje':dias===1?'Amanhã':'Em '+dias+' dias';
+      return `<div style="display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)">
+        <div style="width:42px;height:42px;border-radius:13px;background:${cor}20;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0">${c.cat.split(' ')[0]}</div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:.92rem;color:var(--ink)">${c.nome}</div>
+          <div style="font-size:.72rem;color:var(--muted);margin-top:2px">📅 ${fmtData(c.venc)}</div>
+          <div style="font-size:.7rem;font-weight:700;color:${cor};margin-top:2px">${lbl}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-family:'Clash Display',sans-serif;font-size:1rem;font-weight:700;color:var(--r)">${BRL(c.val)}</div>
+          <div style="font-size:.65rem;color:var(--muted);margin-top:2px">${c.rec==='mensal'?'Mensal':c.rec==='quinzenal'?'Quinzenal':c.rec==='semanal'?'Semanal':'Única'}</div>
+        </div>
+      </div>`;
+    }).join('');
+  document.getElementById('proximas-modal').classList.add('open');
+}
+
+// ══ MODAL CONTAS ATRASADAS ══
+function openAtrasadasModal(){
+  const td=today();
+  const atrasadas=S.contas.filter(c=>c.venc<td).sort((a,b)=>new Date(a.venc)-new Date(b.venc));
+  const meses=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const fmtData=(d)=>{const[y,m,dia]=d.split('-');return dia+' '+meses[parseInt(m)-1]+' '+y;};
+  document.getElementById('atrasadas-modal-content').innerHTML=!atrasadas.length
+    ?'<div class="empty"><div class="empty-ico">✅</div><p>Nenhuma conta atrasada</p></div>'
+    :atrasadas.map(c=>{
+      const dias=Math.ceil((new Date(td)-new Date(c.venc+'T00:00:00'))/86400000);
+      return `<div style="display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)">
+        <div style="width:42px;height:42px;border-radius:13px;background:var(--rbg);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0">${c.cat.split(' ')[0]}</div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:.92rem;color:var(--ink)">${c.nome}</div>
+          <div style="font-size:.72rem;color:var(--muted);margin-top:2px">📅 Venceu em ${fmtData(c.venc)}</div>
+          <div style="font-size:.7rem;font-weight:700;color:var(--r);margin-top:2px">⚠️ ${dias} dia${dias>1?'s':''} em atraso</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-family:'Clash Display',sans-serif;font-size:1rem;font-weight:700;color:var(--r)">${BRL(c.val)}</div>
+          <div style="background:var(--rbg);color:var(--r);font-size:.65rem;font-weight:700;border-radius:6px;padding:2px 7px;margin-top:4px">Atrasada</div>
+        </div>
+      </div>`;
+    }).join('');
+  document.getElementById('atrasadas-modal').classList.add('open');
 }
 
 function render(){renderDash();renderCorridas();renderGastos();renderContas();renderPlano();renderPizzas();renderDividas();renderHistMeses();}
